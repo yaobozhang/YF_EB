@@ -1,0 +1,447 @@
+--会员主消费门店口径制定过程代码
+--代码贡献者：姚泊彰、薛艳
+--代码更新时间：20190807
+--数据口径：订单时间：20150101-20181231
+
+
+--简介：会员主消费门店口径总共分为3种情况：1、以最近一次消费门店为主消费门店；2、以开卡门店为主消费门店；3、以近6个月消费次数最多为主消费门店；4、以当前订单的前一笔订单再往前推6个月，看消费次数；5、以当前订单的前一笔订单再往前推6个月,且当前订单与前一笔订单相差时间大于180天;
+
+
+--0、数据准备
+	--0.1、会员现状口径订单数据：20150101-20181231 ；订单数据基础过滤（积分兑换订单及订金订单、服务性商品及行政赠品、塑料袋）
+--STEP1:拿到4年订单
+	 with t1 as (
+					SELECT
+						 --t."UUID",	   								--明细唯一编码
+						 t."STSC_DATE",  								--销售日期
+						 t."PHMC_CODE",     							--门店编码
+						 t."MEMBER_ID",								--会员编码
+						 case when t.member_id is not null then 'Y' else 'N' end as is_member       				 --是否是会员
+					FROM "_SYS_BIC"."YF_BI.DW.CRM/CV_REEF_SALE_ORDER_DETL"('PLACEHOLDER' = ('$$EndTime$$',
+						 '20190101'),
+						 'PLACEHOLDER' = ('$$BeginTime$$',
+						 '20150101')) t 
+					--left join dw.DIM_GOODS_H g on g.goods_sid=t.goods_sid
+					GROUP BY --t."UUID",								   --明细唯一编码											   
+						 t."STSC_DATE",                                  --销售日期
+						 t."PHMC_CODE",                                  --门店编码
+						 t."MEMBER_ID"									 --会员编码
+				)
+   */
+--/* 1、以最近一次消费门店为主消费门店；*/		
+ /*		
+ --同人同天同门店算一次
+  ,t2_1 as (
+			select MEMBER_ID
+				,PHMC_CODE
+				,STSC_DATE
+				,sale_times
+				,row_number() OVER (PARTITION BY member_id ORDER BY stsc_date asc) rk
+			from
+			(
+				select MEMBER_ID
+					,PHMC_CODE
+					,STSC_DATE
+					, 1 as sale_times
+				from t1 
+				where is_member='Y'
+				group by MEMBER_ID
+					,PHMC_CODE
+					,STSC_DATE
+			) 
+		)
+
+		,t3 as (
+			
+			select T1.MEMBER_ID						--会员
+				,t1.PHMC_CODE as AFTER_PHMC_CODE
+				,t2.PHMC_CODE AS BEFORE_PHMC_CODE
+			from t2_1 t1
+			left join t2_1 t2
+			on t1.member_id=t2.member_id
+			and t1.rk = t2.rk+1
+			
+		)
+
+		select
+			count(*) as total_sale_times, --总消费次数
+			sum(IS_SAME_PHMC) as SAME_NUM, --在主消费门店的消费次数
+			sum(IS_SAME_PHMC)/count(*) as SAME_RATE  --在主消费门店消费的概率
+		from (
+		select case when AFTER_PHMC_CODE=BEFORE_PHMC_CODE then 1 else 0 end as IS_SAME_PHMC
+		from t3
+		where AFTER_PHMC_CODE is not null and BEFORE_PHMC_CODE is not null
+*/
+--/*2、以开卡门店为主消费门店；*/	
+	/*	
+	--同人同天同门店算一次
+	,t2_1 as (
+			select MEMBER_ID
+				,PHMC_CODE
+				,STSC_DATE
+				,sale_times
+				,row_number() OVER (PARTITION BY member_id ORDER BY stsc_date asc) rk
+				,OPEN1_PHMC_CODE
+			from
+			(
+				select MEMBER_ID
+					,PHMC_CODE
+					,STSC_DATE
+					, 1 as sale_times
+				from t1 
+				where is_member='Y'
+				group by MEMBER_ID
+					,PHMC_CODE
+					,STSC_DATE
+			) a
+			left join "DW"."FACT_MEMBER_BASE" b
+			on a.MEMBER_ID=b.memb_code
+		)
+
+		select
+			count(*) as total_sale_times,
+			sum(IS_SAME_PHMC) as SAME_NUM,
+			sum(IS_SAME_PHMC)/count(*) as SAME_RATE
+		from (
+		select case when PHMC_CODE=OPEN1_PHMC_CODE then 1 else 0 end as IS_SAME_PHMC
+		from t2_1
+		where OPEN1_PHMC_CODE is not null and PHMC_CODE is not null)
+*/
+--/*3、以近6个月消费次数最多为主消费门店*/
+ /*
+	 --STEP3:得到主消费门店是A下一次购买还是A的概率，即一个会员一笔订单之前N个月内消费最多的门店，且该笔订单发生在该门店内的概率
+	,t3_1 as (
+			select MEMBER_ID
+				,PHMC_CODE
+				,STSC_DATE
+				,add_months(STSC_DATE,-6) as SIX_MONTH_AGO_DATE			--这个地方可以修改看5个月 4个月 3个月。。。
+				,row_number() OVER (PARTITION BY member_id ORDER BY stsc_date asc) rk
+			from
+			(
+				select MEMBER_ID
+					,PHMC_CODE
+					,STSC_DATE
+				from t1 
+				where is_member='Y'
+				--and STSC_DATE>='20160101'
+				group by MEMBER_ID
+					,PHMC_CODE
+					,STSC_DATE
+			)
+	)
+	--每笔订单关联自己前6个月订单
+	,t3_2 as (
+		
+		select T1.MEMBER_ID						--会员
+			,t1.rk								--订单编号
+			,t1.PHMC_CODE as AFTER_PHMC_CODE	--当前单门店
+			,t2.PHMC_CODE AS BEFORE_PHMC_CODE	--过去6个月门店
+		from t3_1 t1
+		left join t3_1 t2
+		on t1.member_id=t2.member_id
+		and t1.STSC_DATE > t2.STSC_DATE 
+		and t1.SIX_MONTH_AGO_DATE<t2.STSC_DATE
+		--where t1.STSC_DATE>='20160701'
+		
+	)
+	--每笔单统计主消费门店
+	,t3_3 as
+	(
+		SELECT MEMBER_ID
+			,RK
+			,BEFORE_PHMC_CODE
+			,AFTER_PHMC_CODE
+		FROM
+		(
+			SELECT  MEMBER_ID
+				,RK
+				,BEFORE_PHMC_CODE
+				,AFTER_PHMC_CODE
+				,row_number() OVER (PARTITION BY member_id,RK ORDER BY NUM DESC) rk_1
+			FROM
+			(
+				SELECT MEMBER_ID
+					,RK
+					,BEFORE_PHMC_CODE
+					,MAX(AFTER_PHMC_CODE) AS AFTER_PHMC_CODE
+					,COUNT(1) AS NUM
+				FROM T3_2
+				WHERE BEFORE_PHMC_CODE IS NOT NULL 
+				AND AFTER_PHMC_CODE IS NOT NULL
+				GROUP BY MEMBER_ID
+					,RK
+					,BEFORE_PHMC_CODE
+			)
+		)
+		WHERE rk_1=1
+	)
+
+	--统计
+
+		SELECT 
+			 SUM(IS_SAME_PHMC) AS SAME_NUM --在主消费门店购买的人数
+			,COUNT(1) AS TOTAL_NUM   --有主消费门店的人数
+			,SUM(IS_SAME_PHMC)/COUNT(1)	 AS SAME_RATE   --在主消费门店购买的概率
+			--,count(distinct MEMBER_ID) as memb_qty
+		FROM
+		(   
+			select member_id,case when BEFORE_PHMC_CODE=AFTER_PHMC_CODE then 1 else 0 end as IS_SAME_PHMC
+			from t3_3
+			where BEFORE_PHMC_CODE is not null and AFTER_PHMC_CODE is not null
+		);
+ */
+--/*4、以当前订单的前一笔订单再往前推6个月，看消费次数*/
+/*
+	--同人同天同门店算一次		
+	,t2_1 as (
+		select MEMBER_ID
+			,PHMC_CODE
+			,STSC_DATE
+			,sale_times
+			,row_number() OVER (PARTITION BY member_id ORDER BY stsc_date asc) rk
+		from
+		(
+			select MEMBER_ID
+				,PHMC_CODE
+				,STSC_DATE
+				, 1 as sale_times
+			from t1 
+			where is_member='Y'
+			group by MEMBER_ID
+				,PHMC_CODE
+				,STSC_DATE
+		) 
+	)
+
+	--每笔单找到前一笔单
+	,t2_2 as (
+		SELECT 
+			MEMBER_ID
+			,AFTER_PHMC_CODE
+			,STSC_DATE
+			,sale_times
+		FROM
+		(
+			select T1.MEMBER_ID
+				,t1.PHMC_CODE as AFTER_PHMC_CODE
+				,t2.PHMC_CODE AS BEFORE_PHMC_CODE
+				,DAYS_BETWEEN(t2.STSC_DATE,t1.STSC_DATE) as DAY_DIFF
+				,t2.STSC_DATE
+				,t2.sale_times
+			from t2_1 t1
+			left join t2_1 t2
+			on t1.member_id=t2.member_id
+			and t1.rk = t2.rk+1
+		)
+		where BEFORE_PHMC_CODE is not null
+		and AFTER_PHMC_CODE is not null
+	)
+
+
+	--STEP3:得到主消费门店是A下一次购买还是A的概率，即一个会员一笔订单之前N个月内消费最多的门店，且该笔订单发生在该门店内的概率
+	,t3_1 as (
+			select MEMBER_ID
+				,AFTER_PHMC_CODE as PHMC_CODE
+				,STSC_DATE
+				,add_months(STSC_DATE,-6) as SIX_MONTH_AGO_DATE			--这个地方可以修改看5个月 4个月 3个月。。。
+				,row_number() OVER (PARTITION BY member_id ORDER BY stsc_date asc) rk
+			from
+			(select
+				 MEMBER_ID
+			,AFTER_PHMC_CODE
+			,STSC_DATE
+			from t2_2
+			group by MEMBER_ID
+			,AFTER_PHMC_CODE
+			,STSC_DATE
+			)
+	)
+	--每笔订单关联自己前6个月订单
+	,t3_2 as (
+		
+		select T1.MEMBER_ID						--会员
+			,t1.rk								--订单编号
+			,t1.PHMC_CODE as AFTER_PHMC_CODE	--当前单门店
+			,t2.PHMC_CODE AS BEFORE_PHMC_CODE	--过去6个月门店
+		from t3_1 t1
+		left join t3_1 t2
+		on t1.member_id=t2.member_id
+		and t1.STSC_DATE > t2.STSC_DATE 
+		and t1.SIX_MONTH_AGO_DATE<t2.STSC_DATE
+		--where t1.STSC_DATE>='20160701'
+		
+	)
+	--每笔单统计主消费门店
+	,t3_3 as
+	(
+		SELECT MEMBER_ID
+			,RK
+			,BEFORE_PHMC_CODE
+			,AFTER_PHMC_CODE
+		FROM
+		(
+			SELECT  MEMBER_ID
+				,RK
+				,BEFORE_PHMC_CODE
+				,AFTER_PHMC_CODE
+				,row_number() OVER (PARTITION BY member_id,RK ORDER BY NUM DESC) rk_1
+			FROM
+			(
+				SELECT MEMBER_ID
+					,RK
+					,BEFORE_PHMC_CODE
+					,MAX(AFTER_PHMC_CODE) AS AFTER_PHMC_CODE
+					,COUNT(1) AS NUM
+				FROM T3_2
+				WHERE BEFORE_PHMC_CODE IS NOT NULL 
+				AND AFTER_PHMC_CODE IS NOT NULL
+				GROUP BY MEMBER_ID
+					,RK
+					,BEFORE_PHMC_CODE
+			)
+		)
+		WHERE rk_1=1
+	)
+
+	--统计
+
+		SELECT 
+			 SUM(IS_SAME_PHMC) AS SAME_NUM --在主消费门店购买的人数
+			,COUNT(1) AS TOTAL_NUM   --有主消费门店的人数
+			,SUM(IS_SAME_PHMC)/COUNT(1)	 AS SAME_RATE   --在主消费门店购买的概率
+			--,count(distinct MEMBER_ID) as memb_qty
+		FROM
+		(   
+			select member_id,case when BEFORE_PHMC_CODE=AFTER_PHMC_CODE then 1 else 0 end as IS_SAME_PHMC
+			from t3_3
+			where BEFORE_PHMC_CODE is not null and AFTER_PHMC_CODE is not null
+		)
+*/
+--/*5、以当前订单的前一笔订单再往前推6个月,且当前订单与前一笔订单相差时间大于180天*/
+/*
+--同人同天同门店算一次		
+	,t2_1 as (
+		select MEMBER_ID
+			,PHMC_CODE
+			,STSC_DATE
+			,sale_times
+			,row_number() OVER (PARTITION BY member_id ORDER BY stsc_date asc) rk
+		from
+		(
+			select MEMBER_ID
+				,PHMC_CODE
+				,STSC_DATE
+				, 1 as sale_times
+			from t1 
+			where is_member='Y'
+			group by MEMBER_ID
+				,PHMC_CODE
+				,STSC_DATE
+		) 
+	)
+
+	--每笔单找到前一笔单
+	,t2_2 as (
+		SELECT 
+			MEMBER_ID
+			,AFTER_PHMC_CODE
+			,STSC_DATE
+			,sale_times
+		FROM
+		(
+			select T1.MEMBER_ID
+				,t1.PHMC_CODE as AFTER_PHMC_CODE
+				,t2.PHMC_CODE AS BEFORE_PHMC_CODE
+				,DAYS_BETWEEN(t2.STSC_DATE,t1.STSC_DATE) as DAY_DIFF
+				,t2.STSC_DATE
+				,t2.sale_times
+			from t2_1 t1
+			left join t2_1 t2
+			on t1.member_id=t2.member_id
+			and t1.rk = t2.rk+1
+		)
+		where BEFORE_PHMC_CODE is not null
+		and AFTER_PHMC_CODE is not null
+		and DAY_DIFF>'180'     --'20190903' 新增条件，下钻分析（以当前订单的前一笔订单再往前推6个月，且当前订单与前一次订单时间差在180天以上）
+	)
+
+
+	--STEP3:得到主消费门店是A下一次购买还是A的概率，即一个会员一笔订单之前N个月内消费最多的门店，且该笔订单发生在该门店内的概率
+	,t3_1 as (
+			select MEMBER_ID
+				,AFTER_PHMC_CODE as PHMC_CODE
+				,STSC_DATE
+				,add_months(STSC_DATE,-6) as SIX_MONTH_AGO_DATE			--这个地方可以修改看5个月 4个月 3个月。。。
+				,row_number() OVER (PARTITION BY member_id ORDER BY stsc_date asc) rk
+			from
+			(select
+				 MEMBER_ID
+			,AFTER_PHMC_CODE
+			,STSC_DATE
+			from t2_2
+			group by MEMBER_ID
+			,AFTER_PHMC_CODE
+			,STSC_DATE
+			)
+	)
+	--每笔订单关联自己前6个月订单
+	,t3_2 as (
+		
+		select T1.MEMBER_ID						--会员
+			,t1.rk								--订单编号
+			,t1.PHMC_CODE as AFTER_PHMC_CODE	--当前单门店
+			,t2.PHMC_CODE AS BEFORE_PHMC_CODE	--过去6个月门店
+		from t3_1 t1
+		left join t3_1 t2
+		on t1.member_id=t2.member_id
+		and t1.STSC_DATE > t2.STSC_DATE 
+		and t1.SIX_MONTH_AGO_DATE<t2.STSC_DATE
+		--where t1.STSC_DATE>='20160701'
+		
+	)
+	--每笔单统计主消费门店
+	,t3_3 as
+	(
+		SELECT MEMBER_ID
+			,RK
+			,BEFORE_PHMC_CODE
+			,AFTER_PHMC_CODE
+		FROM
+		(
+			SELECT  MEMBER_ID
+				,RK
+				,BEFORE_PHMC_CODE
+				,AFTER_PHMC_CODE
+				,row_number() OVER (PARTITION BY member_id,RK ORDER BY NUM DESC) rk_1
+			FROM
+			(
+				SELECT MEMBER_ID
+					,RK
+					,BEFORE_PHMC_CODE
+					,MAX(AFTER_PHMC_CODE) AS AFTER_PHMC_CODE
+					,COUNT(1) AS NUM
+				FROM T3_2
+				WHERE BEFORE_PHMC_CODE IS NOT NULL 
+				AND AFTER_PHMC_CODE IS NOT NULL
+				GROUP BY MEMBER_ID
+					,RK
+					,BEFORE_PHMC_CODE
+			)
+		)
+		WHERE rk_1=1
+	)
+
+	--统计
+
+		SELECT 
+			 SUM(IS_SAME_PHMC) AS SAME_NUM --在主消费门店购买的人数
+			,COUNT(1) AS TOTAL_NUM   --有主消费门店的人数
+			,SUM(IS_SAME_PHMC)/COUNT(1)	 AS SAME_RATE   --在主消费门店购买的概率
+			--,count(distinct MEMBER_ID) as memb_qty
+		FROM
+		(   
+			select member_id,case when BEFORE_PHMC_CODE=AFTER_PHMC_CODE then 1 else 0 end as IS_SAME_PHMC
+			from t3_3
+			where BEFORE_PHMC_CODE is not null and AFTER_PHMC_CODE is not null
+		)
+	*/
