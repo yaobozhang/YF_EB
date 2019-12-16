@@ -1,0 +1,540 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" xmlns:Variable="http://www.sap.com/ndb/BiModelVariable.ecore" schemaVersion="2.3" id="CV_REMB_DASV" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="reportingEnabled" calculationScenarioType="TREE_BASED" dataCategory="CUBE" enforceSqlExecution="false" executionSemantic="UNDEFINED" outputViewType="Aggregation">
+  <origin/>
+  <descriptions defaultDescription="数据服务层会员画像"/>
+  <metadata activatedAt="2019-03-07 16:38:17.0" changedAt="2019-03-07 16:37:37.637" createdAt="2019-03-07 16:37:37.637"/>
+  <localVariables>
+    <variable id="exc_date" parameter="true">
+      <descriptions defaultDescription="exc_date"/>
+      <variableProperties datatype="NVARCHAR" length="8" mandatory="false">
+        <valueDomain type="empty"/>
+        <selection multiLine="false" type="SingleValue"/>
+        <defaultRange/>
+      </variableProperties>
+    </variable>
+  </localVariables>
+  <variableMappings>
+    <mapping xsi:type="Variable:VariableMapping" dataSource="#CV_REMB_USER_MODEL_LABEL">
+      <targetVariable name="exc_date" resourceUri="/YF_BI.DM.CRM/calculationviews/CV_REMB_USER_MODEL_LABEL"/>
+      <localVariable>#exc_date</localVariable>
+    </mapping>
+  </variableMappings>
+  <informationModelLayout relativeWidthScenario="38"/>
+  <dataSources>
+    <DataSource id="FACT_MEMBER_CNT_INFO" type="DATA_BASE_TABLE">
+      <viewAttributes allViewAttributes="true"/>
+      <columnObject schemaName="DM" columnObjectName="FACT_MEMBER_CNT_INFO"/>
+    </DataSource>
+    <DataSource id="FACT_MEMBER_BASE" type="DATA_BASE_TABLE">
+      <viewAttributes allViewAttributes="true"/>
+      <columnObject schemaName="DW" columnObjectName="FACT_MEMBER_BASE"/>
+    </DataSource>
+    <DataSource id="CV_REMB_USER_MODEL_LABEL" type="CALCULATION_VIEW">
+      <viewAttributes allViewAttributes="true"/>
+      <resourceUri>/YF_BI.DM.CRM/calculationviews/CV_REMB_USER_MODEL_LABEL</resourceUri>
+    </DataSource>
+    <DataSource id="USER_COUPON_ABTEST_LABEL_L1" type="DATA_BASE_TABLE">
+      <viewAttributes allViewAttributes="true"/>
+      <columnObject schemaName="DM" columnObjectName="USER_COUPON_ABTEST_LABEL_L1"/>
+    </DataSource>
+  </dataSources>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Projection_1" filterExpressionLanguage="SQL">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMBER_ID"/>
+        <viewAttribute id="DATA_DATE"/>
+        <viewAttribute id="MEMBER_TYPE"/>
+        <viewAttribute id="UNIT_PRI"/>
+        <viewAttribute id="IS_EASY_MARKETING"/>
+        <viewAttribute id="ENTI_LIFE_CYCLE_TYPE"/>
+        <viewAttribute id="GROS_MARGIN"/>
+        <viewAttribute id="LAST_TIME_CUNSU_DATE"/>
+        <viewAttribute id="R_ALL_SALE_AMT"/>
+        <viewAttribute id="R_ALL_GROSS_AMT"/>
+        <viewAttribute id="R_ALL_SONSU_TIMES"/>
+        <viewAttribute id="NCD_TYPE"/>
+        <viewAttribute id="NCD_CNT"/>
+      </viewAttributes>
+      <calculatedViewAttributes>
+        <calculatedViewAttribute datatype="DATE" id="exc_date" expressionLanguage="SQL">
+          <formula>'$$exc_date$$'</formula>
+        </calculatedViewAttribute>
+      </calculatedViewAttributes>
+      <input node="#FACT_MEMBER_CNT_INFO">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="DATA_DATE" source="DATA_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_TYPE" source="MEMBER_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="UNIT_PRI" source="UNIT_PRI"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="IS_EASY_MARKETING" source="IS_EASY_MARKETING"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="ENTI_LIFE_CYCLE_TYPE" source="ENTI_LIFE_CYCLE_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="GROS_MARGIN" source="GROS_MARGIN"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="LAST_TIME_CUNSU_DATE" source="LAST_TIME_CUNSU_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_SALE_AMT" source="R_ALL_SALE_AMT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_GROSS_AMT" source="R_ALL_GROSS_AMT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_SONSU_TIMES" source="R_ALL_SONSU_TIMES"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NCD_TYPE" source="NCD_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NCD_CNT" source="NCD_CNT"/>
+      </input>
+      <filter>&quot;DATA_DATE&quot;=&quot;exc_date&quot;</filter>
+    </calculationView>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Projection_2">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMB_CODE"/>
+        <viewAttribute id="COMPANY_CODE"/>
+        <viewAttribute id="BIRT_DATE"/>
+        <viewAttribute id="BELONG_PHMC_CODE"/>
+        <viewAttribute id="CREA_TIME"/>
+        <viewAttribute id="STATE"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <input node="#FACT_MEMBER_BASE">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMB_CODE" source="MEMB_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="COMPANY_CODE" source="COMPANY_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="BIRT_DATE" source="BIRT_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="BELONG_PHMC_CODE" source="BELONG_PHMC_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CREA_TIME" source="CREA_TIME"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STATE" source="STATE"/>
+      </input>
+    </calculationView>
+    <calculationView xsi:type="Calculation:JoinView" id="Join_1" joinType="rightOuter">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMBER_ID"/>
+        <viewAttribute id="STATE"/>
+        <viewAttribute id="COMPANY_CODE"/>
+        <viewAttribute id="CREA_TIME"/>
+        <viewAttribute id="BIRT_DATE"/>
+        <viewAttribute id="BELONG_PHMC_CODE"/>
+        <viewAttribute id="DATA_DATE"/>
+        <viewAttribute id="MEMBER_TYPE"/>
+        <viewAttribute id="UNIT_PRI"/>
+        <viewAttribute id="IS_EASY_MARKETING"/>
+        <viewAttribute id="ENTI_LIFE_CYCLE_TYPE"/>
+        <viewAttribute id="GROS_MARGIN"/>
+        <viewAttribute id="LAST_TIME_CUNSU_DATE"/>
+        <viewAttribute id="R_ALL_SALE_AMT"/>
+        <viewAttribute id="R_ALL_GROSS_AMT"/>
+        <viewAttribute id="R_ALL_SONSU_TIMES"/>
+        <viewAttribute id="NCD_TYPE"/>
+        <viewAttribute id="NCD_CNT"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <input node="#Projection_1">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="DATA_DATE" source="DATA_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_TYPE" source="MEMBER_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="UNIT_PRI" source="UNIT_PRI"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="IS_EASY_MARKETING" source="IS_EASY_MARKETING"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="ENTI_LIFE_CYCLE_TYPE" source="ENTI_LIFE_CYCLE_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="GROS_MARGIN" source="GROS_MARGIN"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="LAST_TIME_CUNSU_DATE" source="LAST_TIME_CUNSU_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_SALE_AMT" source="R_ALL_SALE_AMT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_GROSS_AMT" source="R_ALL_GROSS_AMT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_SONSU_TIMES" source="R_ALL_SONSU_TIMES"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NCD_TYPE" source="NCD_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NCD_CNT" source="NCD_CNT"/>
+      </input>
+      <input node="#Projection_2">
+        <mapping xsi:type="Calculation:AttributeMapping" target="STATE" source="STATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="COMPANY_CODE" source="COMPANY_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CREA_TIME" source="CREA_TIME"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="BIRT_DATE" source="BIRT_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="BELONG_PHMC_CODE" source="BELONG_PHMC_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMB_CODE"/>
+      </input>
+      <joinAttribute name="MEMBER_ID"/>
+    </calculationView>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Projection_3">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMBER_ID"/>
+        <viewAttribute id="WEEKDAY"/>
+        <viewAttribute id="WAKEUP_GROUP"/>
+        <viewAttribute id="NEW_GROUP"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <input node="#CV_REMB_USER_MODEL_LABEL">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMB_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WEEKDAY" source="WEEKDAY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP" source="WAKEUP_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP" source="NEW_GROUP"/>
+      </input>
+    </calculationView>
+    <calculationView xsi:type="Calculation:JoinView" id="Join_2" joinType="leftOuter">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMBER_ID"/>
+        <viewAttribute id="STATE"/>
+        <viewAttribute id="COMPANY_CODE"/>
+        <viewAttribute id="CREA_TIME"/>
+        <viewAttribute id="BIRT_DATE"/>
+        <viewAttribute id="BELONG_PHMC_CODE"/>
+        <viewAttribute id="DATA_DATE"/>
+        <viewAttribute id="MEMBER_TYPE"/>
+        <viewAttribute id="UNIT_PRI"/>
+        <viewAttribute id="IS_EASY_MARKETING"/>
+        <viewAttribute id="ENTI_LIFE_CYCLE_TYPE"/>
+        <viewAttribute id="GROS_MARGIN"/>
+        <viewAttribute id="LAST_TIME_CUNSU_DATE"/>
+        <viewAttribute id="R_ALL_SALE_AMT"/>
+        <viewAttribute id="R_ALL_GROSS_AMT"/>
+        <viewAttribute id="R_ALL_SONSU_TIMES"/>
+        <viewAttribute id="NCD_TYPE"/>
+        <viewAttribute id="NCD_CNT"/>
+        <viewAttribute id="WEEKDAY"/>
+        <viewAttribute id="WAKEUP_GROUP"/>
+        <viewAttribute id="NEW_GROUP"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <input node="#Join_1">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STATE" source="STATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="COMPANY_CODE" source="COMPANY_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CREA_TIME" source="CREA_TIME"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="BIRT_DATE" source="BIRT_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="BELONG_PHMC_CODE" source="BELONG_PHMC_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="DATA_DATE" source="DATA_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_TYPE" source="MEMBER_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="UNIT_PRI" source="UNIT_PRI"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="IS_EASY_MARKETING" source="IS_EASY_MARKETING"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="ENTI_LIFE_CYCLE_TYPE" source="ENTI_LIFE_CYCLE_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="GROS_MARGIN" source="GROS_MARGIN"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="LAST_TIME_CUNSU_DATE" source="LAST_TIME_CUNSU_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_SALE_AMT" source="R_ALL_SALE_AMT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_GROSS_AMT" source="R_ALL_GROSS_AMT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_SONSU_TIMES" source="R_ALL_SONSU_TIMES"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NCD_TYPE" source="NCD_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NCD_CNT" source="NCD_CNT"/>
+      </input>
+      <input node="#Projection_3">
+        <mapping xsi:type="Calculation:AttributeMapping" target="WEEKDAY" source="WEEKDAY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP" source="WAKEUP_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP" source="NEW_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+      </input>
+      <joinAttribute name="MEMBER_ID"/>
+    </calculationView>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Projection_4" filterExpressionLanguage="SQL">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMBER_ID"/>
+        <viewAttribute id="AB_TEST_FLAG"/>
+        <viewAttribute id="MEMBER_COUPON_FLAG"/>
+        <viewAttribute id="AB_TEST_REDUCE"/>
+        <viewAttribute id="BEGIN_DATE"/>
+        <viewAttribute id="END_DATE"/>
+        <viewAttribute id="COUPON_FLAG_R"/>
+        <viewAttribute id="COUPON_LOGICAL_FLAG_R"/>
+      </viewAttributes>
+      <calculatedViewAttributes>
+        <calculatedViewAttribute datatype="DATE" id="exc_date" expressionLanguage="SQL">
+          <formula>'$$exc_date$$'</formula>
+        </calculatedViewAttribute>
+      </calculatedViewAttributes>
+      <input node="#USER_COUPON_ABTEST_LABEL_L1">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="AB_TEST_FLAG" source="AB_TEST_FLAG"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_COUPON_FLAG" source="MEMBER_COUPON_FLAG"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="AB_TEST_REDUCE" source="AB_TEST_REDUCE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="BEGIN_DATE" source="BEGIN_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="END_DATE" source="END_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="COUPON_FLAG_R" source="COUPON_FLAG_R"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="COUPON_LOGICAL_FLAG_R" source="COUPON_LOGICAL_FLAG_R"/>
+      </input>
+      <filter>&quot;exc_date&quot;&lt;=&quot;END_DATE&quot; and &quot;exc_date&quot;>=&quot;BEGIN_DATE&quot;</filter>
+    </calculationView>
+    <calculationView xsi:type="Calculation:JoinView" id="Join_3" joinType="rightOuter">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="AB_TEST_FLAG_1"/>
+        <viewAttribute id="MEMBER_COUPON_FLAG_1"/>
+        <viewAttribute id="AB_TEST_REDUCE"/>
+        <viewAttribute id="MEMBER_ID"/>
+        <viewAttribute id="STATE_1"/>
+        <viewAttribute id="COMPANY_CODE_1"/>
+        <viewAttribute id="CREA_TIME_1"/>
+        <viewAttribute id="BIRT_DATE_1"/>
+        <viewAttribute id="BELONG_PHMC_CODE_1"/>
+        <viewAttribute id="MEMBER_TYPE_1"/>
+        <viewAttribute id="UNIT_PRI"/>
+        <viewAttribute id="IS_EASY_MARKETING_1"/>
+        <viewAttribute id="ENTI_LIFE_CYCLE_TYPE_1"/>
+        <viewAttribute id="GROS_MARGIN"/>
+        <viewAttribute id="LAST_TIME_CUNSU_DATE_1"/>
+        <viewAttribute id="R_ALL_SALE_AMT"/>
+        <viewAttribute id="R_ALL_GROSS_AMT"/>
+        <viewAttribute id="R_ALL_SONSU_TIMES"/>
+        <viewAttribute id="NCD_TYPE_1"/>
+        <viewAttribute id="NCD_CNT"/>
+        <viewAttribute id="WEEKDAY_1"/>
+        <viewAttribute id="WAKEUP_GROUP_1"/>
+        <viewAttribute id="NEW_GROUP_1"/>
+        <viewAttribute id="COUPON_FLAG_R_1"/>
+        <viewAttribute id="COUPON_LOGICAL_FLAG_R_1"/>
+        <viewAttribute id="BEGIN_DATE"/>
+        <viewAttribute id="END_DATE"/>
+        <viewAttribute hidden="true" id="JOIN$MEMBER_ID$MEMBER_ID"/>
+      </viewAttributes>
+      <calculatedViewAttributes>
+        <calculatedViewAttribute datatype="NVARCHAR" id="AB_TEST_FLAG" length="10" expressionLanguage="SQL">
+          <formula>case  when &quot;AB_TEST_FLAG_1&quot; is null then ''&#xD;
+else&quot;AB_TEST_FLAG_1&quot; end</formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="MEMBER_COUPON_FLAG" length="10" expressionLanguage="SQL">
+          <formula>case when &quot;MEMBER_COUPON_FLAG_1&quot; is null then ''&#xD;
+else &quot;MEMBER_COUPON_FLAG_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="VARCHAR" id="STATE" length="20" expressionLanguage="SQL">
+          <formula>case  when &quot;STATE_1&quot; is  null  then ''&#xD;
+else &quot;STATE_1&quot;  end</formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="COMPANY_CODE" length="8" expressionLanguage="SQL">
+          <formula>case when &quot;COMPANY_CODE_1&quot; is null then ''&#xD;
+else &quot;COMPANY_CODE_1&quot;  end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="SECONDDATE" id="CREA_TIME" expressionLanguage="SQL">
+          <formula>case when &quot;CREA_TIME_1&quot; is  null then ''&#xD;
+else &quot;CREA_TIME_1&quot; end</formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="SECONDDATE" id="BIRT_DATE" expressionLanguage="SQL">
+          <formula>case when &quot;BIRT_DATE_1&quot; is  null then ''&#xD;
+else &quot;BIRT_DATE_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="BELONG_PHMC_CODE" length="8" expressionLanguage="SQL">
+          <formula>case  when &quot;BELONG_PHMC_CODE_1&quot; is null then ''&#xD;
+else &quot;BELONG_PHMC_CODE_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="MEMBER_TYPE" length="20" expressionLanguage="SQL">
+          <formula>case  when &quot;MEMBER_TYPE_1&quot; is null then ''&#xD;
+else &quot;MEMBER_TYPE_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="IS_EASY_MARKETING" length="1" expressionLanguage="SQL">
+          <formula>case when &quot;IS_EASY_MARKETING_1&quot; is null then ''&#xD;
+else &quot;IS_EASY_MARKETING_1&quot;  end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="ENTI_LIFE_CYCLE_TYPE" length="30" expressionLanguage="SQL">
+          <formula>case when &quot;ENTI_LIFE_CYCLE_TYPE_1&quot; is null  then ''&#xD;
+else &quot;ENTI_LIFE_CYCLE_TYPE_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="DATE" id="LAST_TIME_CUNSU_DATE" expressionLanguage="SQL">
+          <formula>case when &quot;LAST_TIME_CUNSU_DATE_1&quot; is  null  then ''&#xD;
+else &quot;LAST_TIME_CUNSU_DATE_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="NCD_TYPE" length="1" expressionLanguage="SQL">
+          <formula>case when &quot;NCD_TYPE_1&quot; is null  then ''&#xD;
+else &quot;NCD_TYPE_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="WEEKDAY" length="50" expressionLanguage="SQL">
+          <formula>case when &quot;WEEKDAY_1&quot; is null then ''&#xD;
+else &quot;WEEKDAY_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="WAKEUP_GROUP" length="60" expressionLanguage="SQL">
+          <formula>case when &quot;WAKEUP_GROUP_1&quot; is null then ''&#xD;
+else &quot;WAKEUP_GROUP_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="NEW_GROUP" length="60" expressionLanguage="SQL">
+          <formula>case when &quot;NEW_GROUP_1&quot; is null then ''&#xD;
+else &quot;NEW_GROUP_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="COUPON_FLAG_R" length="100" expressionLanguage="SQL">
+          <formula>case when &quot;COUPON_FLAG_R_1&quot; is null then ''&#xD;
+else &quot;COUPON_FLAG_R_1&quot; end </formula>
+        </calculatedViewAttribute>
+        <calculatedViewAttribute datatype="NVARCHAR" id="COUPON_LOGICAL_FLAG_R" length="100" expressionLanguage="SQL">
+          <formula>case when &quot;COUPON_LOGICAL_FLAG_R_1&quot; is null then ''&#xD;
+else &quot;COUPON_LOGICAL_FLAG_R_1&quot;  end </formula>
+        </calculatedViewAttribute>
+      </calculatedViewAttributes>
+      <input node="#Projection_4">
+        <mapping xsi:type="Calculation:AttributeMapping" target="AB_TEST_FLAG_1" source="AB_TEST_FLAG"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_COUPON_FLAG_1" source="MEMBER_COUPON_FLAG"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="AB_TEST_REDUCE" source="AB_TEST_REDUCE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="COUPON_FLAG_R_1" source="COUPON_FLAG_R"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="COUPON_LOGICAL_FLAG_R_1" source="COUPON_LOGICAL_FLAG_R"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="BEGIN_DATE" source="BEGIN_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="END_DATE" source="END_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MEMBER_ID$MEMBER_ID" source="MEMBER_ID"/>
+      </input>
+      <input node="#Join_2">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="STATE_1" source="STATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="COMPANY_CODE_1" source="COMPANY_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="CREA_TIME_1" source="CREA_TIME"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="BIRT_DATE_1" source="BIRT_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="BELONG_PHMC_CODE_1" source="BELONG_PHMC_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_TYPE_1" source="MEMBER_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="UNIT_PRI" source="UNIT_PRI"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="IS_EASY_MARKETING_1" source="IS_EASY_MARKETING"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="ENTI_LIFE_CYCLE_TYPE_1" source="ENTI_LIFE_CYCLE_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="GROS_MARGIN" source="GROS_MARGIN"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="LAST_TIME_CUNSU_DATE_1" source="LAST_TIME_CUNSU_DATE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_SALE_AMT" source="R_ALL_SALE_AMT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_GROSS_AMT" source="R_ALL_GROSS_AMT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="R_ALL_SONSU_TIMES" source="R_ALL_SONSU_TIMES"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NCD_TYPE_1" source="NCD_TYPE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NCD_CNT" source="NCD_CNT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WEEKDAY_1" source="WEEKDAY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP_1" source="WAKEUP_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP_1" source="NEW_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MEMBER_ID$MEMBER_ID" source="MEMBER_ID"/>
+      </input>
+      <joinAttribute name="JOIN$MEMBER_ID$MEMBER_ID"/>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Join_3">
+    <descriptions defaultDescription="数据服务层会员画像"/>
+    <attributes>
+      <attribute id="MEMBER_ID" order="1" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="会员编码"/>
+        <keyMapping columnObjectName="Join_3" columnName="MEMBER_ID"/>
+      </attribute>
+      <attribute id="AB_TEST_FLAG" order="9" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="分流标识"/>
+        <keyMapping columnObjectName="Join_3" columnName="AB_TEST_FLAG"/>
+      </attribute>
+      <attribute id="MEMBER_COUPON_FLAG" order="10" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="是否政策过滤"/>
+        <keyMapping columnObjectName="Join_3" columnName="MEMBER_COUPON_FLAG"/>
+      </attribute>
+      <attribute id="STATE" order="11" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="会员状态"/>
+        <keyMapping columnObjectName="Join_3" columnName="STATE"/>
+      </attribute>
+      <attribute id="COMPANY_CODE" order="12" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="所属公司"/>
+        <keyMapping columnObjectName="Join_3" columnName="COMPANY_CODE"/>
+      </attribute>
+      <attribute id="CREA_TIME" order="13" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="开卡时间"/>
+        <keyMapping columnObjectName="Join_3" columnName="CREA_TIME"/>
+      </attribute>
+      <attribute id="BIRT_DATE" order="14" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="出生日期"/>
+        <keyMapping columnObjectName="Join_3" columnName="BIRT_DATE"/>
+      </attribute>
+      <attribute id="BELONG_PHMC_CODE" order="15" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="所属门店编码"/>
+        <keyMapping columnObjectName="Join_3" columnName="BELONG_PHMC_CODE"/>
+      </attribute>
+      <attribute id="MEMBER_TYPE" order="16" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="客户标识"/>
+        <keyMapping columnObjectName="Join_3" columnName="MEMBER_TYPE"/>
+      </attribute>
+      <attribute id="IS_EASY_MARKETING" order="17" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="是否易营销"/>
+        <keyMapping columnObjectName="Join_3" columnName="IS_EASY_MARKETING"/>
+      </attribute>
+      <attribute id="ENTI_LIFE_CYCLE_TYPE" order="18" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="完整生命周期类型"/>
+        <keyMapping columnObjectName="Join_3" columnName="ENTI_LIFE_CYCLE_TYPE"/>
+      </attribute>
+      <attribute id="LAST_TIME_CUNSU_DATE" order="19" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="最后一次消费时间"/>
+        <keyMapping columnObjectName="Join_3" columnName="LAST_TIME_CUNSU_DATE"/>
+      </attribute>
+      <attribute id="NCD_TYPE" order="20" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="慢病会员标识"/>
+        <keyMapping columnObjectName="Join_3" columnName="NCD_TYPE"/>
+      </attribute>
+      <attribute id="WEEKDAY" order="21" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="会员偏好星期"/>
+        <keyMapping columnObjectName="Join_3" columnName="WEEKDAY"/>
+      </attribute>
+      <attribute id="WAKEUP_GROUP" order="22" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="流失人群编码"/>
+        <keyMapping columnObjectName="Join_3" columnName="WAKEUP_GROUP"/>
+      </attribute>
+      <attribute id="NEW_GROUP" order="23" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="新客人群编码"/>
+        <keyMapping columnObjectName="Join_3" columnName="NEW_GROUP"/>
+      </attribute>
+      <attribute id="COUPON_FLAG_R" order="24" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="券周期标识"/>
+        <keyMapping columnObjectName="Join_3" columnName="COUPON_FLAG_R"/>
+      </attribute>
+      <attribute id="COUPON_LOGICAL_FLAG_R" order="25" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="券周期逻辑标识"/>
+        <keyMapping columnObjectName="Join_3" columnName="COUPON_LOGICAL_FLAG_R"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures>
+      <measure id="AB_TEST_REDUCE" order="2" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="是否业务过滤"/>
+        <measureMapping columnObjectName="Join_3" columnName="AB_TEST_REDUCE"/>
+      </measure>
+      <measure id="UNIT_PRI" order="3" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="近一年客单价"/>
+        <measureMapping columnObjectName="Join_3" columnName="UNIT_PRI"/>
+      </measure>
+      <measure id="GROS_MARGIN" order="4" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="近一年毛利率"/>
+        <measureMapping columnObjectName="Join_3" columnName="GROS_MARGIN"/>
+      </measure>
+      <measure id="R_ALL_SALE_AMT" order="5" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="累计销售额"/>
+        <measureMapping columnObjectName="Join_3" columnName="R_ALL_SALE_AMT"/>
+      </measure>
+      <measure id="R_ALL_GROSS_AMT" order="6" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="累计毛利额"/>
+        <measureMapping columnObjectName="Join_3" columnName="R_ALL_GROSS_AMT"/>
+      </measure>
+      <measure id="R_ALL_SONSU_TIMES" order="7" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="累计消费次数"/>
+        <measureMapping columnObjectName="Join_3" columnName="R_ALL_SONSU_TIMES"/>
+      </measure>
+      <measure id="NCD_CNT" order="8" aggregationType="sum" measureType="simple">
+        <descriptions defaultDescription="最近一年慢病品类购买次数"/>
+        <measureMapping columnObjectName="Join_3" columnName="NCD_CNT"/>
+      </measure>
+    </baseMeasures>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="99" y="87"/>
+        <rectangleSize height="0" width="0"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Projection_1" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="22" y="453"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Projection_2" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="176" y="453"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Join_1" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="99" y="357"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Projection_3" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="260" y="357"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Join_2" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="176" y="261"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Projection_4" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="22" y="261"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Join_3" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="99" y="165"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

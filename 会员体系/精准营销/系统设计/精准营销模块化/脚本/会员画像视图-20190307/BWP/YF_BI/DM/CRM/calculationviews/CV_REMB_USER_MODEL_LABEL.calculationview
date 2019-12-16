@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" xmlns:Variable="http://www.sap.com/ndb/BiModelVariable.ecore" schemaVersion="2.3" id="CV_REMB_USER_MODEL_LABEL" applyPrivilegeType="ANALYTIC_PRIVILEGE" checkAnalyticPrivileges="true" defaultClient="$$client$$" defaultLanguage="$$language$$" hierarchiesSQLEnabled="false" translationRelevant="true" visibility="internal" calculationScenarioType="TREE_BASED" dataCategory="DIMENSION" enforceSqlExecution="false" executionSemantic="UNDEFINED" outputViewType="Projection">
+  <origin/>
+  <descriptions defaultDescription="数据服务层会员画像"/>
+  <metadata activatedAt="2019-03-07 16:38:17.0" changedAt="2019-03-07 16:37:37.766" createdAt="2019-03-07 16:37:37.766"/>
+  <localVariables>
+    <variable id="exc_date" parameter="true">
+      <descriptions defaultDescription="输入时间"/>
+      <variableProperties datatype="NVARCHAR" length="8" mandatory="false">
+        <valueDomain type="empty"/>
+        <selection multiLine="false" type="SingleValue"/>
+        <defaultRange/>
+      </variableProperties>
+    </variable>
+  </localVariables>
+  <variableMappings>
+    <mapping xsi:type="Variable:VariableMapping" dataSource="#CV_REMB_WAKEUP_GROUP_V1">
+      <targetVariable name="exc_date" resourceUri="/YF_BI.EXT_APP.Recom_Engine/calculationviews/CV_REMB_WAKEUP_GROUP_V1"/>
+      <localVariable>#exc_date</localVariable>
+    </mapping>
+    <mapping xsi:type="Variable:VariableMapping" dataSource="#CV_REMB_NEW_GROUP_V1">
+      <targetVariable name="exc_date" resourceUri="/YF_BI.EXT_APP.Recom_Engine/calculationviews/CV_REMB_NEW_GROUP_V1"/>
+      <localVariable>#exc_date</localVariable>
+    </mapping>
+  </variableMappings>
+  <informationModelLayout relativeWidthScenario="42"/>
+  <dataSources>
+    <DataSource id="CV_REMB_WAKEUP_GROUP_V1" type="CALCULATION_VIEW">
+      <viewAttributes allViewAttributes="true"/>
+      <resourceUri>/YF_BI.EXT_APP.Recom_Engine/calculationviews/CV_REMB_WAKEUP_GROUP_V1</resourceUri>
+    </DataSource>
+    <DataSource id="CV_REMB_NEW_GROUP_V1" type="CALCULATION_VIEW">
+      <viewAttributes allViewAttributes="true"/>
+      <resourceUri>/YF_BI.EXT_APP.Recom_Engine/calculationviews/CV_REMB_NEW_GROUP_V1</resourceUri>
+    </DataSource>
+    <DataSource id="USERB_USER_SALE_TIME_PREFER" type="DATA_BASE_TABLE">
+      <viewAttributes allViewAttributes="true"/>
+      <columnObject schemaName="DM" columnObjectName="USERB_USER_SALE_TIME_PREFER"/>
+    </DataSource>
+    <DataSource id="FACT_MEMBER_BASE" type="DATA_BASE_TABLE">
+      <viewAttributes allViewAttributes="true"/>
+      <columnObject schemaName="DW" columnObjectName="FACT_MEMBER_BASE"/>
+    </DataSource>
+  </dataSources>
+  <calculationViews>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Projection_1" filterExpressionLanguage="COLUMN_ENGINE">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMBER_ID"/>
+        <viewAttribute id="WAKEUP_GROUP"/>
+        <viewAttribute id="WAKEUP_GROUP_DESC"/>
+      </viewAttributes>
+      <calculatedViewAttributes>
+        <calculatedViewAttribute datatype="DATE" id="exc_date" expressionLanguage="SQL">
+          <formula>'$$exc_date$$'</formula>
+        </calculatedViewAttribute>
+      </calculatedViewAttributes>
+      <input node="#CV_REMB_WAKEUP_GROUP_V1">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP" source="MEMB_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP_DESC" source="MEMB_GROUP_DESC"/>
+      </input>
+      <filter>not  isnull(&quot;WAKEUP_GROUP&quot;)</filter>
+    </calculationView>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Projection_2" filterExpressionLanguage="COLUMN_ENGINE">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMBER_ID"/>
+        <viewAttribute id="NEW_GROUP"/>
+        <viewAttribute id="NEW_GROUP_DESC"/>
+      </viewAttributes>
+      <calculatedViewAttributes>
+        <calculatedViewAttribute datatype="DATE" id="exc_date" expressionLanguage="SQL">
+          <formula>'$$exc_date$$'</formula>
+        </calculatedViewAttribute>
+      </calculatedViewAttributes>
+      <input node="#CV_REMB_NEW_GROUP_V1">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP" source="MEMB_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP_DESC" source="MEMB_GROUP_DESC"/>
+      </input>
+      <filter>not  isnull(&quot;NEW_GROUP&quot;)</filter>
+    </calculationView>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Projection_3" filterExpressionLanguage="SQL">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMBER_ID"/>
+        <viewAttribute id="MEMB_CNT"/>
+        <viewAttribute id="WEEKDAY"/>
+        <viewAttribute id="WEEKDAY_PCT"/>
+        <viewAttribute id="DATA_DATE"/>
+      </viewAttributes>
+      <calculatedViewAttributes>
+        <calculatedViewAttribute datatype="DATE" id="exc_date" expressionLanguage="SQL">
+          <formula>'$$exc_date$$'</formula>
+        </calculatedViewAttribute>
+      </calculatedViewAttributes>
+      <input node="#USERB_USER_SALE_TIME_PREFER">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMB_CNT" source="MEMB_CNT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WEEKDAY" source="WEEKDAY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WEEKDAY_PCT" source="WEEKDAY_PCT"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="DATA_DATE" source="DATA_DATE"/>
+      </input>
+      <filter>&quot;DATA_DATE&quot;=&quot;exc_date&quot;&#xD;
+and &quot;MEMB_CNT&quot;>4&#xD;
+and &quot;WEEKDAY_PCT&quot; >0.4</filter>
+    </calculationView>
+    <calculationView xsi:type="Calculation:UnionView" id="Union_1">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMBER_ID"/>
+        <viewAttribute id="WAKEUP_GROUP"/>
+        <viewAttribute id="WAKEUP_GROUP_DESC"/>
+        <viewAttribute id="exc_date"/>
+        <viewAttribute id="NEW_GROUP"/>
+        <viewAttribute id="NEW_GROUP_DESC"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <input emptyUnionBehavior="NO_ROW" node="#Projection_1">
+        <mapping xsi:type="Calculation:ConstantAttributeMapping" target="NEW_GROUP" null="true" value=""/>
+        <mapping xsi:type="Calculation:ConstantAttributeMapping" target="NEW_GROUP_DESC" null="true" value=""/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP" source="WAKEUP_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP_DESC" source="WAKEUP_GROUP_DESC"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="exc_date" source="exc_date"/>
+      </input>
+      <input emptyUnionBehavior="NO_ROW" node="#Projection_2">
+        <mapping xsi:type="Calculation:ConstantAttributeMapping" target="WAKEUP_GROUP" null="true" value=""/>
+        <mapping xsi:type="Calculation:ConstantAttributeMapping" target="WAKEUP_GROUP_DESC" null="true" value=""/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMBER_ID" source="MEMBER_ID"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP" source="NEW_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP_DESC" source="NEW_GROUP_DESC"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="exc_date" source="exc_date"/>
+      </input>
+    </calculationView>
+    <calculationView xsi:type="Calculation:ProjectionView" id="Projection_4">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMB_CODE"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <input node="#FACT_MEMBER_BASE">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMB_CODE" source="MEMB_CODE"/>
+      </input>
+    </calculationView>
+    <calculationView xsi:type="Calculation:JoinView" id="Join_2" joinType="rightOuter">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="MEMB_CODE"/>
+        <viewAttribute id="WAKEUP_GROUP"/>
+        <viewAttribute id="WAKEUP_GROUP_DESC"/>
+        <viewAttribute id="NEW_GROUP"/>
+        <viewAttribute id="NEW_GROUP_DESC"/>
+        <viewAttribute hidden="true" id="JOIN$MEMBER_ID$MEMB_CODE"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <input node="#Union_1">
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP" source="WAKEUP_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP_DESC" source="WAKEUP_GROUP_DESC"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP" source="NEW_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP_DESC" source="NEW_GROUP_DESC"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MEMBER_ID$MEMB_CODE" source="MEMBER_ID"/>
+      </input>
+      <input node="#Projection_4">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMB_CODE" source="MEMB_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MEMBER_ID$MEMB_CODE" source="MEMB_CODE"/>
+      </input>
+      <joinAttribute name="JOIN$MEMBER_ID$MEMB_CODE"/>
+    </calculationView>
+    <calculationView xsi:type="Calculation:JoinView" id="Join_1" joinType="rightOuter">
+      <descriptions/>
+      <viewAttributes>
+        <viewAttribute id="WEEKDAY"/>
+        <viewAttribute id="MEMB_CODE"/>
+        <viewAttribute id="WAKEUP_GROUP"/>
+        <viewAttribute id="WAKEUP_GROUP_DESC"/>
+        <viewAttribute id="NEW_GROUP"/>
+        <viewAttribute id="NEW_GROUP_DESC"/>
+        <viewAttribute hidden="true" id="JOIN$MEMBER_ID$MEMB_CODE"/>
+      </viewAttributes>
+      <calculatedViewAttributes/>
+      <input node="#Projection_3">
+        <mapping xsi:type="Calculation:AttributeMapping" target="WEEKDAY" source="WEEKDAY"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MEMBER_ID$MEMB_CODE" source="MEMBER_ID"/>
+      </input>
+      <input node="#Join_2">
+        <mapping xsi:type="Calculation:AttributeMapping" target="MEMB_CODE" source="MEMB_CODE"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP" source="WAKEUP_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="WAKEUP_GROUP_DESC" source="WAKEUP_GROUP_DESC"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP" source="NEW_GROUP"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="NEW_GROUP_DESC" source="NEW_GROUP_DESC"/>
+        <mapping xsi:type="Calculation:AttributeMapping" target="JOIN$MEMBER_ID$MEMB_CODE" source="MEMB_CODE"/>
+      </input>
+      <joinAttribute name="JOIN$MEMBER_ID$MEMB_CODE"/>
+    </calculationView>
+  </calculationViews>
+  <logicalModel id="Join_1">
+    <descriptions defaultDescription="数据服务层会员画像"/>
+    <attributes>
+      <attribute id="MEMB_CODE" order="1" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="会员编码"/>
+        <keyMapping columnObjectName="Join_1" columnName="MEMB_CODE"/>
+      </attribute>
+      <attribute id="WEEKDAY" order="2" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="会员偏好星期"/>
+        <keyMapping columnObjectName="Join_1" columnName="WEEKDAY"/>
+      </attribute>
+      <attribute id="WAKEUP_GROUP" order="3" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="流失人群"/>
+        <keyMapping columnObjectName="Join_1" columnName="WAKEUP_GROUP"/>
+      </attribute>
+      <attribute id="WAKEUP_GROUP_DESC" order="4" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="流失人群描述"/>
+        <keyMapping columnObjectName="Join_1" columnName="WAKEUP_GROUP_DESC"/>
+      </attribute>
+      <attribute id="NEW_GROUP" order="5" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="新客人群"/>
+        <keyMapping columnObjectName="Join_1" columnName="NEW_GROUP"/>
+      </attribute>
+      <attribute id="NEW_GROUP_DESC" order="6" attributeHierarchyActive="false" displayAttribute="false">
+        <descriptions defaultDescription="新客人群描述"/>
+        <keyMapping columnObjectName="Join_1" columnName="NEW_GROUP_DESC"/>
+      </attribute>
+    </attributes>
+    <calculatedAttributes/>
+    <privateDataFoundation>
+      <tableProxies/>
+      <joins/>
+      <layout>
+        <shapes/>
+      </layout>
+    </privateDataFoundation>
+    <baseMeasures/>
+    <calculatedMeasures/>
+    <restrictedMeasures/>
+    <localDimensions/>
+  </logicalModel>
+  <layout>
+    <shapes>
+      <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+        <upperLeftCorner x="99" y="87"/>
+        <rectangleSize height="0" width="0"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Projection_1" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="22" y="473"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Projection_2" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="176" y="473"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Projection_3" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="22" y="261"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Join_1" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="99" y="165"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Union_1" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="99" y="357"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Projection_4" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="253" y="357"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+      <shape expanded="true" modelObjectName="Join_2" modelObjectNameSpace="CalculationView">
+        <upperLeftCorner x="176" y="261"/>
+        <rectangleSize height="-1" width="-1"/>
+      </shape>
+    </shapes>
+  </layout>
+</Calculation:scenario>

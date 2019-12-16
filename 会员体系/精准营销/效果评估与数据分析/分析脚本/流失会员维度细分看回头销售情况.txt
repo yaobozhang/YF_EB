@@ -1,0 +1,161 @@
+
+
+---描述：流失会员 前 会员状态分类看会员质量
+-- 拿会员6月状态，看7月销售回头情况
+-- 拿会员7月状态，看8月销售回头情况
+---开发者：沈秋华
+
+
+
+with t1 as 
+--(select member_id,data_date
+--,R_ALL_SONSU_TIMES  --累计消费次数
+--,R_ALL_NCD_CNT --累计慢病品类购买次数
+--,round(days_between(LAST_TIME_CUNSU_DATE,to_char('20180731','yyyymmdd'))/30,0) as churn_month   --流失间隔月
+--from DM.FACT_MEMBER_CNT_INFO
+--where  data_date='2018-08-31'
+--and (MEMBER_TYPE='01'
+--or(  MEMBER_TYPE='02' and LAST_TIME_CUNSU_DATE <= add_months(to_date('20180731'),-9))) --9个月内有消费
+--),--会员状态标识  
+
+(select t1.member_id,data_date
+,R_ALL_SONSU_TIMES  --累计消费次数
+,R_ALL_NCD_CNT --累计慢病品类购买次数
+,churn_month ---流失月
+,history_m
+,case when R_ALL_SONSU_TIMES=1 then '1次'
+when R_ALL_SONSU_TIMES=2 then '2次'
+when R_ALL_SONSU_TIMES<=7 then '3~7次'
+when R_ALL_SONSU_TIMES>7 then '8次及以上'
+end as R_ALL_SONSU_TIMES_flag  --消费次数分类
+,case when churn_month between 9 and 12 then '9~12月'
+when churn_month between 13 and 15 then '13~15月'
+when churn_month between 16 and 23 then '16~23月'
+when churn_month between 24 and 35 then '24~35月'
+when churn_month>35 then '36月及以上' end  as churn_month_flag
+,case when R_ALL_NCD_CNT between 0 and 1 then '0~1次'
+when R_ALL_NCD_CNT between 2 and 8 then '2~8次'
+when R_ALL_NCD_CNT>8 then '9次及以上' end as R_ALL_NCD_CNT_flag
+, floor( history_m/30) *30 as history_m_flag
+from 
+(select member_id
+from dm.user_coupon_abtest_label_L1
+where '20180831'<=end_date and '20180831'>=begin_date
+and MEMBER_COUPON_FLAG='coupon' 
+and AB_TEST_REDUCE=1
+and COUPON_FLAG_R='WAKE_UP'
+) t1 
+left join 
+(select member_id,data_date
+,R_ALL_SONSU_TIMES  --累计消费次数
+,R_ALL_NCD_CNT --累计慢病品类购买次数
+,round(days_between(LAST_TIME_CUNSU_DATE,to_char('20180831','yyyymmdd'))/30,0) as churn_month   --流失间隔月
+from DM.FACT_MEMBER_CNT_INFO
+where  data_date='2018-08-31'
+) t2 
+on t1.member_id=t2.member_id
+left join  ---关联会员历史毛利
+(select  member_id,history_m,value_level --会员等级
+from DM.MEMB_VALUE_MODEL_RESULT 
+ where update_date ='20180919' 
+ and  history_m is not null
+ ) t3 
+ on t1.member_id=t3.member_id
+
+), --券干预会员-购买次数+流失间隔月 
+
+/*
+(select t1.member_id,R_YEAR_SONSU_TIMES
+from 
+(select member_id,data_date
+,LAST_TIME_CUNSU_DATE
+--,round(days_between(LAST_TIME_CUNSU_DATE,to_char('20180831','yyyymmdd'))/30,0) as churn_month   --流失间隔月
+from DM.FACT_MEMBER_CNT_INFO
+where  data_date='2018-08-31'
+and member_type='01'
+) t1 
+inner join 
+(select member_id,data_date,R_YEAR_SONSU_TIMES from 
+DM.FACT_MEMBER_CNT_INFO
+where data_date>'2015-01-31'
+and member_type in ('02','0301')
+) t2 
+on to_char(t1.LAST_TIME_CUNSU_DATE,'yyyymm') =to_char(t2.data_date,'yyyymm') 
+and t1.member_id=t2.member_id
+),---会员流失前近一年消费次数
+*/
+
+/*
+(select t1.member_id,ADMS_ORG_NAME,MEMB_GNDR
+from 
+	(select member_id
+	from dm.user_coupon_abtest_label_L1
+	where '20180831'<=end_date and '20180831'>=begin_date
+	and MEMBER_COUPON_FLAG='coupon' 
+	and AB_TEST_REDUCE=1
+	and COUPON_FLAG_R='WAKE_UP'
+	) t1 
+left join
+	(select member_id,MEMB_GNDR,ADMS_ORG_NAME
+	from 
+		(select 
+		memb_code as member_id,
+		company_code,
+		MEMB_GNDR
+		from DW.FACT_MEMBER_BASE
+		) t1 
+	left join 
+			(select ADMS_ORG_NAME,--行政组织名称
+				ADMS_ORG_CODE
+			   from "DW"."DIM_PHMC"
+			   group by ADMS_ORG_NAME,--行政组织名称
+				ADMS_ORG_CODE
+			) t2 
+			 on t1.company_code=t2.ADMS_ORG_CODE 
+	) t2 
+	on t1.member_id=t2.member_id
+),---流失会员基本特征-分公司
+*/
+--(select member_id,1 as R_ALL_SONSU_TIMES from dm.bi_memb_coupon_combine_hist
+--where update_date_send between '2018-08-01' and '2018-08-25'
+--and coupon_flag='WAKE_UP'
+--group by member_id
+--),---发券会员
+
+t2 as  --计算会员的订单数据
+(select member_id,sum(sale_money) as sale_money,
+sum(gross_money) as gross_money,count(distinct s1.sale_bill_code) as order_cnt
+from 
+(select member_id,sale_bill_code,sale_time
+		from  ds_pos.sales_order
+		where  sale_time > add_days(to_date('20180901'),0)
+		and sale_time<add_days(to_date('20181001'),0)
+		and member_id is not null) s1 
+	inner join 
+		(select store_code,sale_bill_code,sale_money,account_price_gross_money as  gross_money,quantity
+              from  ds_pos.sales_orderdetails
+              where   sale_time > add_days(to_date('20180901'),0)
+		 and sale_time<add_days(to_date('20181001'),0)
+		) s2 
+		on s1.sale_bill_code=s2.sale_bill_code
+group by  member_id
+)
+
+---看不同维度人群下，各个销售、回头指标
+select * 
+from 
+(select R_ALL_SONSU_TIMES_flag,churn_month,memb_cnt,order_memb_cnt,order_memb_cnt/(memb_cnt+0.0001) as order_memb_pct,
+sale_money,gross_money,gross_money/(sale_money+0.0001) as gross_rate,order_cnt,sale_money/(order_cnt+0.0001) as unit_prc,
+sale_money/(memb_cnt+0.0001) as memb_avg_sale_money
+from 
+(select R_ALL_SONSU_TIMES,churn_month,count(distinct t1.member_id) as memb_cnt,count(distinct t2.member_id) as order_memb_cnt,
+sum(sale_money) as sale_money,sum(gross_money) as gross_money,sum(order_cnt) as order_cnt
+from t1 
+left join 
+t2 
+on t1.member_id=t2.member_id 
+group by R_ALL_SONSU_TIMES_flag,churn_month
+) t 
+--where R_ALL_SONSU_TIMES>=1 and R_ALL_SONSU_TIMES<=8
+)
+;

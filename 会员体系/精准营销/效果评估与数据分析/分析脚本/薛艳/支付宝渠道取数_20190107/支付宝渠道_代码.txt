@@ -1,0 +1,36 @@
+--开发者：薛艳
+--问题：因支付宝领券界面暂无法统计到渠道，因此需单独通过券模板ID提取用券订单数、用券整单销售、用券整单毛利
+--注意点：
+--是否需要修改参数：是（时间参数）
+--开发时间：20190107
+--修改记录
+--
+
+select 
+a.TEMPLATE_ID,
+e.ADMS_ORG_NAME,
+count(distinct c.sale_bill_code), --用券订单数
+sum(d.sale_money) ,  --用券整单销售
+sum(d.ACCOUNT_PRICE_GROSS_MONEY) --用券整单毛利
+ from "DS_CRM"."ZT_COUPON" a
+ inner join "DS_CRM"."ZT_COUPON_TEMPLATE"  b
+ on a.TEMPLATE_ID=b.uuid
+ inner join "DS_POS"."SALES_ORDER" c
+ on a.order_code=c.sale_bill_code
+ inner join "DS_POS"."SALES_ORDERDETAILS" d
+ on c.sale_bill_code=d.sale_bill_code
+ left join "DW"."DIM_PHMC" e
+ on c.store_code=e.phmc_code
+ where a.TEMPLATE_ID in 
+ ('5c2ef988e55eb41a6650bed1','5c25bdade55eb41a664f4d1d',
+ '5c259976e55eb41a664f4cdd','5c25985ee55eb41a664f4cdc',
+ '5c25978ee55eb41a664f4cda','5c259719e55eb41a664f4cd7',
+ '5c2596b3e55eb41a664f4cd6','5c259675e55eb41a664f4cd3')
+ and to_date(c.sale_time)>='20190101'
+ group by 
+ a.TEMPLATE_ID,
+e.ADMS_ORG_NAME
+order by 
+a.TEMPLATE_ID,
+e.ADMS_ORG_NAME
+ and to_date(c.sale_time)<='20181228'
