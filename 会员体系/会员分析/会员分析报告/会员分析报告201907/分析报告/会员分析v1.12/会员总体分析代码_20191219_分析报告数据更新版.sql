@@ -67,9 +67,9 @@
                  ,sum( case when g.PURC_CLAS_LEV1_CODE='01' then sale_amt end) as PURC_MONEY 	--营销销售
 		         ,sum( case when g.PURC_CLAS_LEV1_CODE='02' then sale_amt end) as NO_PURC_MONEY	--非营销
 			FROM "_SYS_BIC"."YF_BI.DW.CRM/CV_REEF_SALE_ORDER_DETL"('PLACEHOLDER' = ('$$EndTime$$',
-				 '20190601'),
+				 '20191219'),
 				 'PLACEHOLDER' = ('$$BeginTime$$',
-				 '20180101')) t 
+				 '20181219')) t 
 			left join dw.DIM_GOODS_H g on g.goods_sid=t.goods_sid
 			GROUP BY t."UUID",								   --明细唯一编码											   
 				 t."STSC_DATE",                                  --销售日期
@@ -149,12 +149,11 @@
 			  where g1.PHMC_CODE = s.PHMC_CODE 
 			  and 
 			  ( --上海公司医保店或者开店时间大于20190501或者有关店时间的剔除
-			   g1.STAR_BUSI_TIME > '20190601' 
+			   g1.STAR_BUSI_TIME > '20191219' 
 			   or 
 			   (g1.PHMC_S_NAME like '%医保%' and g1.ADMS_ORG_CODE = '1001' )
 			   or CLOSE_DATE is not null
-			   or company_code='4000'
-			   or PROP_ATTR in ('Z02','Z07')
+			   or PROP_ATTR in ('Z02','Z07','Z03','Z04')
 			   )
 			 )
 			),
@@ -264,8 +263,8 @@
 					   sum(sale_amt) as sale_amt, 
 			           1 as sale_times 
 			from t1
-			where stsc_date>=add_years(to_date('20190601','yyyymmdd'),-1)
-			      and stsc_date<'20190601'
+			where stsc_date>=add_years(to_date('20191219','yyyymmdd'),-1)
+			      and stsc_date<'20191219'
 			group by 
 			stsc_date,
 			member_id,
@@ -281,13 +280,12 @@
 			 avg(one_year_sale_times)		--近一年人均消费次数
 			 from (select memb_code,CREA_TIME
 		from "DW"."FACT_MEMBER_BASE"
-		where CREA_TIME<'20190601') a
+		where CREA_TIME<'20191219') a
 		left join t5
 		on a.memb_code=t5.member_id
 		left join t6
 		on a.memb_code=t6.member_id
 		group by source
-			 ;
 	*/
 				
     /*--1.1.1、下钻分析各线上渠道近一年人均销售额、近一年人均消费次数
@@ -932,8 +930,8 @@
 			case when floor(days_between(c.birthday,now())/365)>=20  
 				and  floor(days_between(c.birthday,now())/365)<=85 then floor((floor(days_between(c.birthday,now())/365)-20)/5)   --将年龄按5岁分等
 				 else  '00'  end as  age,  
-			sale_hour ,                                         --"年龄"
-			--sum(sale_times) as sale_times
+			sale_hour,                                          --"年龄"
+			sum(sale_times) as sale_times
 			from  
 			(
 				select
@@ -988,7 +986,7 @@
 							select stsc_date,					--日期
 								member_id,					--会员ID
 								phmc_code,					--门店号
-								AT_TEAR,					--年份带出来
+								AT_YEAR AS AT_TEAR,					--年份带出来
 								birthday,
 								sex,
 							CASE WHEN IFNULL(T.PRES_FLAG,2) =  1 AND s.PROD_CATE_LEV1_CODE = 'Y01' then PROD_CATE_LEV2_NAME||'处方药'
@@ -1056,7 +1054,7 @@
 			 group by  sex,
 			age
 			)
-			 
+			, 
 			 --计算各年龄段人均门店情况
 			t5 as (
 			select 
