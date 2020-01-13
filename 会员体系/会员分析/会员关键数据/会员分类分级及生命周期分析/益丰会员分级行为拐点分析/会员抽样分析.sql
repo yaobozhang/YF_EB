@@ -8,7 +8,7 @@ with t1 as (
 	select member_id 
 	from "EXT_TMP"."YBZ_MEMBER_ANY"
 	group by member_id 
-	having sum(sale_amt) >3000
+	having sum(sale_amt) >1000
 	limit 100			--拿1000个
 )
 ,
