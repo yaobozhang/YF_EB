@@ -1,6 +1,6 @@
 --会员总体分析
 --代码贡献者：姚泊彰
---代码更新时间：20191221
+--代码更新时间：20191231
 --数据口径：见各自模块
 
 
@@ -145,8 +145,8 @@
 			 where type_code='m_shopType' and deletelable='0'
 		) n
 		on t.phmc_type=n.dict_code
-		where is_member='Y'     
-		and not exists
+		where is_member='Y' and 				--分析会员占比时关闭
+		not exists
 		 (
 			  select 1 from dw.DIM_PHMC g1
 			  where g1.PHMC_CODE = s.PHMC_CODE 
@@ -250,7 +250,7 @@
 	*/
 	--0.3、订单范围(20160101-20191231，即三年趋势)；订单数据基础过滤（积分兑换订单及订金订单、服务性商品及行政赠品、塑料袋）,数据源时间在不同分析可能需要修改
 		/*--适用分析 2.1.2 , 2.4 , 2.5 , 2.6(需要多取一年) , 3.2 , 3.4
-	/*	with t1 as (
+		with t1 as (
 			SELECT
 				 t."UUID",	   								--明细唯一编码
 				 t."STSC_DATE",  								--销售日期
@@ -1109,7 +1109,7 @@
 				and  floor(days_between(c.birthday,now())/365)<=85 then  floor((floor(days_between(c.birthday,now())/365)-20)/5)
 				 else  '00'  end
 			 )
-			 
+			, 
 		--汇总t2,t3,t4,t5各计算字段
 		t6 as( 
 			 select t2.*,t3.sale_hour, t3.sale_times,t4.FIVE_PROD_CATE_NAME,t5.phmc_code_qty from t2
@@ -1122,7 +1122,7 @@
 			 left join t5
 			 on t2.sex=t5.sex
 			 and t2.age=t5.age
-			 where rn_1=1;
+			 where rn_1=1
 		 )
 		 select * from t6
 		*/
@@ -1213,7 +1213,7 @@
 	--各渠道会员来源
 	with t2 as (
 		select 
-		to_char(CREA_TIME,'yyyy/mm'),
+		to_char(CREA_TIME,'yyyy'),
 		case when MEMB_SOUR in ('ALIPAY','ZFM') then '支付宝+支付宝商城'
 			  when MEMB_SOUR in ('WX','WXM') then '微信+微信商城'
 			  when MEMB_SOUR in ('ST') THEN '门店' 
@@ -1222,13 +1222,14 @@
 		 from 
 		"DW"."FACT_MEMBER_BASE"
 		where 
-		CREA_TIME<'20191219'      --时间自行调整
+		MEMB_SOUR not in ('SG_JM','SG')
+		AND CREA_TIME<'20200101'      --时间自行调整
 		and CREA_TIME>='20180101'
-		GROUP BY to_char(CREA_TIME,'yyyy/mm'),
+		GROUP BY to_char(CREA_TIME,'yyyy'),
 		case when MEMB_SOUR in ('ALIPAY','ZFM') then '支付宝+支付宝商城'
 			  when MEMB_SOUR in ('WX','WXM') then '微信+微信商城'
 			  when MEMB_SOUR in ('ST') THEN '门店' 
-			  else '其他'end;
+			  else '其他'end
 	),
 	--其他渠道
 	t3 as (
@@ -1238,8 +1239,8 @@
 		(
 			select   MEMB_SOUR,count(*) as num
 			from "DW"."FACT_MEMBER_BASE" a
-			where  a.CREA_TIME<'20191219' 
-			and a.CREA_TIME>='20181219' 
+			where  a.CREA_TIME<'20200101' 
+			and a.CREA_TIME>='20190101' 
 			and a.MEMB_SOUR not in ('ALIPAY','ZFM','WX','WXM','ST')
 			group by MEMB_SOUR
 		) a

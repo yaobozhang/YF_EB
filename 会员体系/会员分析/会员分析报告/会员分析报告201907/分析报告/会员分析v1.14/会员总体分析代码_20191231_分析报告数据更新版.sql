@@ -7,7 +7,7 @@
 --简介：会员总体分析总共分为3块：1、会员大数分析；2、会员分析；3、门店品类分析
 
 --0、数据准备
-	--0.1、订单范围：20140101-20191219 ；订单数据基础过滤（积分兑换订单及订金订单、服务性商品及行政赠品、塑料袋）
+	--0.1、订单范围：20140101-20191231 ；订单数据基础过滤（积分兑换订单及订金订单、服务性商品及行政赠品、塑料袋）
 		/*--适用分析 1.1
 		with t1 as (
 		SELECT
@@ -26,7 +26,7 @@
 			 sum("SALE_QTY") AS "SALE_QTY",				--销售数量
 			 sum("SALE_AMT") AS "SALE_AMT"				--销售额
 		FROM "_SYS_BIC"."YF_BI.DW.CRM/CV_REEF_SALE_ORDER_DETL"('PLACEHOLDER' = ('$$EndTime$$',
-			 '20191219'),
+			 '20191231'),
 			 'PLACEHOLDER' = ('$$BeginTime$$',
 			 '20140101')) 
 		GROUP BY "UUID",								   --明细唯一编码											   
@@ -39,7 +39,7 @@
 			 "MEMBER_ID")                                  --会员编码
 		,
 		*/
-	--0.2、订单范围(20181219-20191219，即一年)；订单数据基础过滤（积分兑换订单及订金订单、服务性商品及行政赠品、塑料袋）,数据源时间在不同分析可能需要修改
+	--0.2、订单范围(20181231-20191231，即一年)；订单数据基础过滤（积分兑换订单及订金订单、服务性商品及行政赠品、塑料袋）,数据源时间在不同分析可能需要修改
 		/*--适用分析 2.1.1 , 2.1.3 , 2.2 , 2.7 , 3.1 , 3.3 
 		with t1 as (
 			SELECT
@@ -66,9 +66,9 @@
                  ,sum( case when g.PURC_CLAS_LEV1_CODE='01' then sale_amt end) as PURC_MONEY 	--营销销售
 		         ,sum( case when g.PURC_CLAS_LEV1_CODE='02' then sale_amt end) as NO_PURC_MONEY	--非营销
 			FROM "_SYS_BIC"."YF_BI.DW.CRM/CV_REEF_SALE_ORDER_DETL"('PLACEHOLDER' = ('$$EndTime$$',
-				 '20191219'),
+				 '20200101'),
 				 'PLACEHOLDER' = ('$$BeginTime$$',
-				 '20181219')) t 
+				 '20190101')) t 
 			left join dw.DIM_GOODS_H g on g.goods_sid=t.goods_sid
 			GROUP BY t."UUID",								   --明细唯一编码											   
 				 t."STSC_DATE",                                  --销售日期
@@ -145,14 +145,14 @@
 			 where type_code='m_shopType' and deletelable='0'
 		) n
 		on t.phmc_type=n.dict_code
-		where is_member='Y'     
-		and not exists
+		where is_member='Y' and 				--分析会员占比时关闭 
+		not exists
 		 (
 			  select 1 from dw.DIM_PHMC g1
 			  where g1.PHMC_CODE = s.PHMC_CODE 
 			  and 
 			  ( --上海公司医保店或者开店时间大于20190501或者有关店时间的剔除
-				   g1.STAR_BUSI_TIME > '20191219' 
+				   g1.STAR_BUSI_TIME > '20191231' 
 				   or 
 				   (g1.PHMC_S_NAME like '%医保%' and g1.ADMS_ORG_CODE = '1001' )
 				   or CLOSE_DATE is not null
@@ -248,9 +248,9 @@
 	
 	),
 	*/
-	--0.3、订单范围(20160101-20191219，即三年趋势)；订单数据基础过滤（积分兑换订单及订金订单、服务性商品及行政赠品、塑料袋）,数据源时间在不同分析可能需要修改
+	--0.3、订单范围(20160101-20191231，即三年趋势)；订单数据基础过滤（积分兑换订单及订金订单、服务性商品及行政赠品、塑料袋）,数据源时间在不同分析可能需要修改
 		/*--适用分析 2.1.2 , 2.4 , 2.5 , 2.6(需要多取一年) , 3.2 , 3.4
-	/*	with t1 as (
+		with t1 as (
 			SELECT
 				 t."UUID",	   								--明细唯一编码
 				 t."STSC_DATE",  								--销售日期
@@ -275,7 +275,7 @@
                  ,sum( case when g.PURC_CLAS_LEV1_CODE='01' then sale_amt end) as PURC_MONEY 	--营销销售
 		         ,sum( case when g.PURC_CLAS_LEV1_CODE='02' then sale_amt end) as NO_PURC_MONEY	--非营销
 			FROM "_SYS_BIC"."YF_BI.DW.CRM/CV_REEF_SALE_ORDER_DETL"('PLACEHOLDER' = ('$$EndTime$$',
-				 '20191219'),
+				 '20200101'),
 				 'PLACEHOLDER' = ('$$BeginTime$$',
 				 '20160101')) t 
 			left join dw.DIM_GOODS_H g on g.goods_sid=t.goods_sid
@@ -365,7 +365,7 @@
 			  where g1.PHMC_CODE = s.PHMC_CODE 
 			  and 
 			  ( --上海公司医保店或者开店时间大于20190501或者有关店时间的剔除
-			   g1.STAR_BUSI_TIME > '20191219' 
+			   g1.STAR_BUSI_TIME > '20191231' 
 			   or 
 			   (g1.PHMC_S_NAME like '%医保%' and g1.ADMS_ORG_CODE = '1001' )
 			   or CLOSE_DATE is not null
@@ -475,15 +475,15 @@
 		
 
 /*--1、会员现状（大数分析）*/
-	/*--1.1、得到会员总数、无消费会员数、线上消费会员数、线下消费会员数、全渠道消费会员数、近一年人均销售额、近一年人均消费次数
-		--拿到会员主数据，作为所有会员主表，时间截止到20191219
+	/*--1.1、得到会员总数、无消费会员数、线上消费会员数、线下消费会员数、全渠道消费会员数、近一年人均销售额、近一年人均消费次数(需要修改时间)
+		--拿到会员主数据，作为所有会员主表，时间截止到20191231
 			t2_0 as (
 			select memb_code from "DW"."FACT_MEMBER_BASE"
-			where CREA_TIME<'20191219'
+			where CREA_TIME<'20200101'
 		)
 		--select count(1) from t2_0
 		,
-		--得到近一年人均销售额、消费次数，时间为20181219-20191219
+		--得到近一年人均销售额、消费次数，时间为20181231-20191231
 		t2_1 as (
 		select 
 		   member_id,
@@ -497,8 +497,8 @@
 				   sum(sale_amt) as sale_amt, 
 				   1 as sale_times 
 			from t1
-			where stsc_date>=add_years(to_date('20191219','yyyymmdd'),-1)
-				  and stsc_date<'20191219'
+			where stsc_date>=add_years(to_date('20200101','yyyymmdd'),-1)
+				  and stsc_date<'20200101'
 			group by 
 			stsc_date,
 			member_id,
@@ -885,7 +885,7 @@
 		 on  t2.age=t5.age
 		 left join t7
 		 on  t2.age=t7.age
-		 where rn_1=1;
+		 where rn_1=1
 		)
 		select * from t8
 	
@@ -929,7 +929,7 @@
 					,sum(goods_qty)  as goods_qty   --SKU总数
 					,SUM(PURC_MONEY)/(SUM(PURC_MONEY)+SUM(NO_PURC_MONEY)) AS PURC_RATE		--营销权重占比
 			from  t1_2 c
-			where floor(days_between(c.birthday,now())/365)>=20 and floor(days_between(c.birthday,now())/365)<=85
+			where floor(days_between(c.birthday,now())/365)>=20 and floor(days_between(c.birthday,now())/365)<=80
 				  and sex in ('男','女')
 			group by 
 			case when sex not in ('男','女') then '未知' 
@@ -1216,23 +1216,19 @@
 	/*--2.3、会员注册渠道（不需要消费数据）
 	--各渠道会员来源
 	with t2 as (
-		select 
-		to_char(CREA_TIME,'yyyy/mm'),
-		case when MEMB_SOUR in ('ALIPAY','ZFM') then '支付宝+支付宝商城'
-			  when MEMB_SOUR in ('WX','WXM') then '微信+微信商城'
+		select MEMB_CODE,
+		to_char(CREA_TIME,'yyyy') AS CREA_YEAR,
+		case when MEMB_SOUR in ('ALIPAY','ZFM') then '支付宝'
+			  when MEMB_SOUR in ('WX','WXM','MMP','WXVIP') then '微信'
 			  when MEMB_SOUR in ('ST') THEN '门店' 
-			  else '其他'end as MEMB_SOUR
-		,count(*)
+			  else '其他' end as MEMB_SOUR_FLAG
+		,MEMB_SOUR
 		 from 
 		"DW"."FACT_MEMBER_BASE"
 		where 
-		CREA_TIME<'20191219'      --时间自行调整
+		CREA_TIME<'20200101'      --时间自行调整
 		and CREA_TIME>='20180101'
-		GROUP BY to_char(CREA_TIME,'yyyy/mm'),
-		case when MEMB_SOUR in ('ALIPAY','ZFM') then '支付宝+支付宝商城'
-			  when MEMB_SOUR in ('WX','WXM') then '微信+微信商城'
-			  when MEMB_SOUR in ('ST') THEN '门店' 
-			  else '其他'end;
+		and MEMB_SOUR not in ('SG','SG_XX','JM')
 	),
 	--其他渠道
 	t3 as (
@@ -1240,17 +1236,18 @@
 			dict_code,dict_name,num
 		from 
 		(
-			select   MEMB_SOUR,count(*) as num
-			from "DW"."FACT_MEMBER_BASE" a
-			where  a.CREA_TIME<'20191219' 
-			and a.CREA_TIME>='20181219' 
-			and a.MEMB_SOUR not in ('ALIPAY','ZFM','WX','WXM','ST')
-			group by MEMB_SOUR
+			SELECT MEMB_SOUR
+				,COUNT(1) AS NUM
+			FROM T2
+			WHERE CREA_YEAR='2019'
+			AND MEMB_SOUR_FLAG='其他'
+			GROUP BY MEMB_SOUR
 		) a
 		left join (select dict_code,dict_name from "DS_POS"."SYS_DICT" ) b
 		on a.MEMB_SOUR=b.dict_code
 	)
-	select * from t2
+	--SELECT CREA_YEAR,MEMB_SOUR_FLAG,COUNT(1) FROM T2 GROUP BY CREA_YEAR,MEMB_SOUR_FLAG
+	select * from t3 where dict_name is not null order by num desc
 	*/
 	/*--2.4、订单分析
 	--得到会员非会员各年订单数和客单价(近三年)

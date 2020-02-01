@@ -421,8 +421,8 @@
 	),
 	
 	*/
-	--0.4、订单数据：岳阳所有订单(20181223-20191223)；订单数据基础过滤
-	/*--适用范围：4.1
+	--0.4、订单数据：岳阳所有订单(20190101-20191231)；订单数据基础过滤
+	/*--适用范围：3.5、4.1
 	with t1 as (
 			SELECT
 				 t."UUID",	   								--明细唯一编码
@@ -450,9 +450,9 @@
                  ,sum( case when g.PURC_CLAS_LEV1_CODE='01' then sale_amt end) as PURC_MONEY 	--营销销售
 		         ,sum( case when g.PURC_CLAS_LEV1_CODE='02' then sale_amt end) as NO_PURC_MONEY	--非营销
 			FROM "_SYS_BIC"."YF_BI.DW.CRM/CV_REEF_SALE_ORDER_DETL"('PLACEHOLDER' = ('$$EndTime$$',
-				 '20191223'),
+				 '20200101'),
 				 'PLACEHOLDER' = ('$$BeginTime$$',
-				 '20181223')) t 
+				 '20190101')) t 
 			left join dw.DIM_GOODS_H g on g.goods_sid=t.goods_sid
 			inner join "EXT_TMP"."YUEYANG_STORE" t1 on t.PHMC_CODE=t1.PHMC_CODE 
 			GROUP BY t."UUID",								   --明细唯一编码											   
@@ -569,6 +569,19 @@
 	phmc_code
 	)
     ,
+    --同人同天同商品算一次
+	t1_3 as (
+		SELECT STSC_DATE,
+			GOODS_CODE,
+			MEMBER_ID,
+			SUM(SALE_AMT) AS SALE_AMT,	--销售额
+			SUM(GROS_PROF_AMT) AS GROS_PROF_AMT		--毛利额
+		FROM t1
+		GROUP BY STSC_DATE,
+			GOODS_CODE,
+			MEMBER_ID
+	)
+	,
 	--得到处理后的品类
 	t1_4 as (
 		--得到拼接后的品类
@@ -625,8 +638,6 @@
 	
 	),
 	*/
-
-
 --1、现状（大数分析）
 	--1.1  总会员数、消费会员数、直营总会员数、消费会员数
 	/*
@@ -963,7 +974,96 @@
 	SELECT * FROM t1
 	
 	*/
-   
+	
+	/*--3.5、疾病分析
+	--得到疾病-药数据
+	--首先得到主治用药，并得到每个药的条数
+	t2_0 as (
+		select GOODS_CODE,count(1) as num from "EXT_TMP"."BOZHANG_MEDI_DISEASE" where POINT=2 group by GOODS_CODE
+	)
+	--step2.1 然后，取出疾病表中只有一条主治用药的单品
+	,
+	t2_1 as (
+		select t0.GOODS_CODE,t1.DISEASE_NAME_LEV1,t1.DISEASE_NAME_LEV2 from
+		(
+			select GOODS_CODE from t2_0 where num=1
+		)t0
+		left join 
+		(
+			SELECT * FROM "EXT_TMP"."BOZHANG_MEDI_DISEASE" where POINT=2
+		)
+		t1 
+		on t0.GOODS_CODE=t1.GOODS_CODE
+	)
+	,
+	--拿step1中的数据与step2.1关联得到每个会员每天买过的疾病情况，并过滤掉疾病为空的天数
+	t3 as (
+		select MEMBER_ID
+			,STSC_DATE
+			,DISEASE_NAME_LEV2
+		FROM (
+			select  t1.MEMBER_ID,						--会员编码
+			 t1.STSC_DATE,  					--销售日期
+			 t1.GOODS_CODE,    				--商品编码
+			 t2.DISEASE_NAME_LEV1,			--疾病一级
+			 t2.DISEASE_NAME_LEV2			--疾病二级
+			from t1_3 t1
+			left join t2_1 t2
+			on t1.GOODS_CODE=t2.GOODS_CODE
+		)
+		WHERE  DISEASE_NAME_LEV2 is not null 
+		group by MEMBER_ID
+			,STSC_DATE
+			,DISEASE_NAME_LEV2
+	)
+	,
+	--step4:对每个会员数据按照疾病进行汇总，（然后把该表打横作为标签，在视图标签中实现，可以结合来看实现方式）
+	t4 as (
+		select member_id,DISEASE_NAME_LEV2,count(1) as day_num 
+		from t3
+		group by member_id,DISEASE_NAME_LEV2
+	)
+	--step5:统计每个疾病中会员的相关数据
+	,
+	t5 as(
+		SELECT t1.MEMBER_ID
+			,t1.SALE_AMT
+			,t1.GROS_PROF_AMT
+			,t1.NUM as sale_times
+			,t4.DISEASE_NAME_LEV2
+		FROM
+		(
+			select member_id
+				,SUM(SALE_AMT) AS SALE_AMT
+				,SUM(GROS_PROF_AMT) AS GROS_PROF_AMT
+				,COUNT(1) AS NUM
+			from
+			(
+				select STSC_DATE,
+					PHMC_CODE,
+					MEMBER_ID,
+					SALE_AMT,	--销售额
+					GROS_PROF_AMT --毛利额
+				FROM t1_2 
+			)
+			group by member_id
+		) t1 
+		LEFT JOIN t4 
+		on t1.MEMBER_ID=t4.member_id
+	)
+	,
+	t6 as (
+		select DISEASE_NAME_LEV2
+		,count(distinct member_id) as memb_num --会员数
+		,avg(SALE_AMT) as memb_year_sale
+		,avg(GROS_PROF_AMT) as memb_year_gros
+		,avg(sale_times) as memb_year_times
+		from t5
+		group by DISEASE_NAME_LEV2
+	)
+	select * from t6
+	*/
+	
 --4、品类分析
 	/*--4.1、品类销售结构（一年）
 	--总体结构
