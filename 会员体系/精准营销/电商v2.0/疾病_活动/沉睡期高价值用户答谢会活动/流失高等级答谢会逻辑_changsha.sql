@@ -303,7 +303,7 @@ T5 AS (
 			,T1.LAST_BUY_DATE		--最后一次购买时间
 			,T1.MAX_PRICE			--最高成交价
 			,T1.MIN_PRICE			--最低成交价
-			,row_number() over(partition by member_id order by IF_BUF_FLAG desc,GOODS_CODE asc) as rn
+			,row_number() over(partition by member_id order by IF_BUF_FLAG desc,LAST_BUY_DATE desc,GOODS_CODE asc) as rn
 		FROM T5_1 t1
 	)t1
 	where rn=1
