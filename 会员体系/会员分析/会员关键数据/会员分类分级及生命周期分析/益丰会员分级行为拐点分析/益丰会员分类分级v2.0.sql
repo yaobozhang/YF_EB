@@ -9,15 +9,12 @@ with t1 as
 	select 
 	member_id,
 	SALE_AMT,
-	case when SALE_AMT<30 then 1
-		when SALE_AMT >=30 and SALE_AMT <70 then 2
-		when SALE_AMT >=70 and SALE_AMT <200 then 3
-		when SALE_AMT >=200 and SALE_AMT <400 then 4
-		when SALE_AMT >=400 and SALE_AMT <600 then 5
-		when SALE_AMT >=600 and SALE_AMT <1000 then 6
-		when SALE_AMT >=1000 and SALE_AMT <4300 then 7
-		when SALE_AMT >=4300 and SALE_AMT <10000 then 8
-		when SALE_AMT >=10000 then 9 end as LV 
+	case when SALE_AMT <200 then 1
+		when SALE_AMT >=200 and SALE_AMT <600 then 2
+		when SALE_AMT >=600 and SALE_AMT <1000 then 3
+		when SALE_AMT >=1000 and SALE_AMT <4300 then 4
+		when SALE_AMT >=4300 and SALE_AMT <10000 then 5
+		when SALE_AMT >=10000 then 6 end as LV 
 	from
 	(
 		SELECT member_id
@@ -27,7 +24,7 @@ with t1 as
 		and stsc_date>='20180101'
 		and stsc_date<'20200101'
 		group by member_id 
-		having sum(sale_amt) >1
+		having sum(sale_amt) >0
 	)t1
 
 )	
